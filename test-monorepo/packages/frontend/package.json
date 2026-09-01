@@ -1,0 +1,11 @@
+{
+  "name": "@test/frontend",
+  "version": "1.0.0",
+  "dependencies": {
+    "@test/api": "workspace:*",
+    "@test/ui": "workspace:*"
+  },
+  "scripts": {
+    "build": "echo Building frontend"
+  }
+}

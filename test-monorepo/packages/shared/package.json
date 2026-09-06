@@ -1,7 +1,9 @@
 {
   "name": "@test/shared",
   "version": "1.0.0",
+   "description": "Shared package",
   "scripts": {
     "build": "echo Building shared"
   }
+ 
 }

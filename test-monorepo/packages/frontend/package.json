@@ -6,6 +6,6 @@
     "@test/ui": "workspace:*"
   },
   "scripts": {
-    "build": "echo Building frontend"
+    "build": "echo Building frntend"
   }
 }

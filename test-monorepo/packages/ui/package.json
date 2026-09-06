@@ -5,6 +5,6 @@
     "@test/shared": "workspace:*"
   },
   "scripts": {
-    "build": "echo Building ui"
+    "build": "node build.js"
   }
 }

@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import crypto from "node:crypto";
 
 type PackageInfo = {
   name: string;
@@ -10,6 +11,45 @@ type PackageInfo = {
   devDependencies: string[];
   scripts: Record<string, string>;
 };
+
+function getPackageHash(packagePath: string): string {
+  const hash = crypto.createHash("sha256");
+
+  function hashDirectory(
+    directory: string,
+    relativeDirectory = ""
+  ): void {
+    const entries = fs
+      .readdirSync(directory)
+      .sort();
+
+    for (const entry of entries) {
+      const fullPath = path.join(directory, entry);
+      const relativePath = path.join(relativeDirectory, entry);
+
+      const stats = fs.statSync(fullPath);
+
+      if (stats.isDirectory()) {
+        hashDirectory(fullPath, relativePath);
+        continue;
+      }
+
+      if (stats.isFile()) {
+        // Include the filename/path
+        hash.update(relativePath);
+
+        // Include the file contents
+        const content = fs.readFileSync(fullPath);
+        hash.update(content);
+      }
+    }
+  }
+
+  hashDirectory(packagePath);
+
+  return hash.digest("hex");
+}
+
 
 function runTask(
   packageName: string,
@@ -148,6 +188,50 @@ const packageNames = new Set(
 
 const graph = new Map<string, string[]>();
 
+
+function getTaskHash(
+  packageName: string,
+  packagePath: string,
+  visited = new Set<string>()
+): string {
+  // Prevent infinite recursion if something goes wrong
+  // with the dependency graph.
+  if (visited.has(packageName)) {
+    return "";
+  }
+
+  visited.add(packageName);
+
+  const hash = crypto.createHash("sha256");
+
+  // 1. Hash this package's own files
+  hash.update(getPackageHash(packagePath));
+
+  // 2. Get this package's dependencies
+  const dependencies = [...(graph.get(packageName) ?? [])].sort();
+
+  // 3. Include the task hash of each dependency
+  for (const dependency of dependencies) {
+    const dependencyPackage = packages.find(
+      (pkg) => pkg.name === dependency
+    );
+
+    if (!dependencyPackage) {
+      continue;
+    }
+
+    const dependencyHash = getTaskHash(
+      dependencyPackage.name,
+      dependencyPackage.path,
+      visited
+    );
+
+    hash.update(dependencyHash);
+  }
+
+  return hash.digest("hex");
+}
+
 for (const pkg of packages) {
   const internalDependencies =
     pkg.dependencies.filter((dependency) =>
@@ -231,33 +315,164 @@ if (buildOrder.length !== graph.size) {
 //   process.exit(0);
 // }
 
-async function runBuild() {
-  for (const packageName of buildOrder) {
-    const pkg = packages.find((p) => p.name === packageName);
+async function runBuildParallel() {
+  // How many dependencies does each package still have?
+  const remainingDependencies = new Map<string, number>();
 
-    if (!pkg) {
-      throw new Error(`Package not found: ${packageName}`);
+  for (const [packageName, dependencies] of graph) {
+    remainingDependencies.set(packageName, dependencies.length);
+  }
+
+  // Packages that are ready to run
+  const ready: string[] = [];
+
+  for (const [packageName, degree] of remainingDependencies) {
+    if (degree === 0) {
+      ready.push(packageName);
     }
+  }
 
-    const command = pkg.scripts[taskName];
+  const completed = new Set<string>();
 
-    if (!command) {
-      console.log(
-        `\n⚠ ${packageName} has no "${taskName}" script. Skipping.`
-      );
-      continue;
+  while (ready.length > 0) {
+    // Take all currently-ready packages
+    const currentBatch = ready.splice(0);
+
+    console.log(
+      `\n🚀 Running in parallel: ${currentBatch.join(", ")}`
+    );
+
+    // Run all packages in this batch at the same time
+    await Promise.all(
+      currentBatch.map(async (packageName) => {
+        const pkg = packages.find((p) => p.name === packageName);
+
+        if (!pkg) {
+          throw new Error(`Package not found: ${packageName}`);
+        }
+
+       const currentHash = getTaskHash(
+  packageName,
+  pkg.path
+);
+const cachedHash = getCachedHash(packageName);
+
+if (currentHash === cachedHash) {
+  console.log(`⚡ CACHE HIT: ${packageName}`);
+  completed.add(packageName);
+  return;
+}
+
+console.log(`🔨 CACHE MISS: ${packageName}`);
+
+        const command = pkg.scripts[taskName];
+
+        if (!command) {
+          console.log(
+            `\n⚠ ${packageName} has no "${taskName}" script. Skipping.`
+          );
+          completed.add(packageName);
+          return;
+        }
+
+       await runTask(packageName, pkg.path, command);
+
+savePackageHash(packageName, currentHash);
+
+completed.add(packageName);
+      })
+    );
+
+    // The packages in this batch are now finished.
+    // Remove them from the dependency count of their dependents.
+    for (const completedPackage of currentBatch) {
+      for (const [packageName, dependencies] of graph) {
+        if (dependencies.includes(completedPackage)) {
+          const currentDegree =
+            remainingDependencies.get(packageName);
+
+          if (currentDegree === undefined) {
+            continue;
+          }
+
+          const newDegree = currentDegree - 1;
+
+          remainingDependencies.set(packageName, newDegree);
+
+          // All dependencies are now complete
+          if (newDegree === 0) {
+            ready.push(packageName);
+          }
+        }
+      }
     }
+  }
 
-    await runTask(
-      packageName,
-      pkg.path,
-    //   taskName,
-      command
+  if (completed.size !== graph.size) {
+    throw new Error(
+      "Build could not complete. Possible circular dependency."
     );
   }
 }
 
-runBuild().catch((error) => {
+
+
+function getCachePath(): string {
+  const cachePath = path.join(process.cwd(), ".cache");
+
+  if (!fs.existsSync(cachePath)) {
+    fs.mkdirSync(cachePath, { recursive: true });
+  }
+
+  return cachePath;
+}
+
+function savePackageHash(
+  packageName: string,
+  hash: string
+): void {
+  const cachePath = getCachePath();
+
+  const safeName = packageName.replace(/[^a-zA-Z0-9-_]/g, "_");
+
+  const filePath = path.join(
+    cachePath,
+    `${safeName}.json`
+  );
+
+  const cacheData = {
+    packageName,
+    hash,
+  };
+
+  fs.writeFileSync(
+    filePath,
+    JSON.stringify(cacheData, null, 2)
+  );
+}
+
+function getCachedHash(packageName: string): string | null {
+  const cachePath = getCachePath();
+
+  const safeName = packageName.replace(/[^a-zA-Z0-9-_]/g, "_");
+
+  const filePath = path.join(
+    cachePath,
+    `${safeName}.json`
+  );
+
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  const content = fs.readFileSync(filePath, "utf-8");
+
+  const cacheData = JSON.parse(content);
+
+  return cacheData.hash;
+}
+
+runBuildParallel().catch((error) => {
   console.error("\n❌ Build failed:");
   console.error(error);
   process.exit(1);

@@ -5,6 +5,6 @@
     "@test/shared": "workspace:*"
   },
   "scripts": {
-    "build": "echo Building database"
+   "build": "node build.js"
   }
 }

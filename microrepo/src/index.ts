@@ -66,6 +66,50 @@ function getPackageHash(packagePath: string): string {
 }
 
 
+function getChangedFiles(
+  workspacePath: string
+): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      "git",
+      ["diff", "--name-only"],
+      {
+        cwd: workspacePath,
+        shell: true,
+      }
+    );
+
+    let output = "";
+
+    child.stdout.on("data", (data) => {
+      output += data.toString();
+    });
+
+    child.on("close", (code) => {
+      if (code !== 0) {
+        reject(
+          new Error(
+            `Git diff failed with exit code ${code}`
+          )
+        );
+        return;
+      }
+
+      const files = output
+        .split(/\r?\n/)
+        .map((file) => file.trim())
+        .filter(Boolean);
+
+      resolve(files);
+    });
+
+    child.on("error", (error) => {
+      reject(error);
+    });
+  });
+}
+
+
 function runTask(
   packageName: string,
   packagePath: string,
@@ -528,3 +572,12 @@ runBuildParallel().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+
+getChangedFiles(workspacePath)
+  .then((files) => {
+    console.log("\nChanged files:");
+    console.log(files);
+  })
+  .catch((error) => {
+    console.error(error);
+  });

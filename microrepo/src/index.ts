@@ -15,6 +15,14 @@ type PackageInfo = {
 function getPackageHash(packagePath: string): string {
   const hash = crypto.createHash("sha256");
 
+  const ignoredDirectories = new Set([
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    ".cache",
+  ]);
+
   function hashDirectory(
     directory: string,
     relativeDirectory = ""
@@ -25,17 +33,24 @@ function getPackageHash(packagePath: string): string {
 
     for (const entry of entries) {
       const fullPath = path.join(directory, entry);
-      const relativePath = path.join(relativeDirectory, entry);
+      const relativePath = path.join(
+        relativeDirectory,
+        entry
+      );
 
       const stats = fs.statSync(fullPath);
 
       if (stats.isDirectory()) {
+        if (ignoredDirectories.has(entry)) {
+          continue;
+        }
+
         hashDirectory(fullPath, relativePath);
         continue;
       }
 
       if (stats.isFile()) {
-        // Include the filename/path
+        // Include the file path
         hash.update(relativePath);
 
         // Include the file contents
@@ -192,15 +207,15 @@ const graph = new Map<string, string[]>();
 function getTaskHash(
   packageName: string,
   packagePath: string,
-  visited = new Set<string>()
+  visiting = new Set<string>()
 ): string {
-  // Prevent infinite recursion if something goes wrong
-  // with the dependency graph.
-  if (visited.has(packageName)) {
+  // Prevent infinite recursion if a circular dependency
+  // somehow reaches this function.
+  if (visiting.has(packageName)) {
     return "";
   }
 
-  visited.add(packageName);
+  visiting.add(packageName);
 
   const hash = crypto.createHash("sha256");
 
@@ -208,9 +223,11 @@ function getTaskHash(
   hash.update(getPackageHash(packagePath));
 
   // 2. Get this package's dependencies
-  const dependencies = [...(graph.get(packageName) ?? [])].sort();
+  const dependencies = [
+    ...(graph.get(packageName) ?? []),
+  ].sort();
 
-  // 3. Include the task hash of each dependency
+  // 3. Include each dependency's task hash
   for (const dependency of dependencies) {
     const dependencyPackage = packages.find(
       (pkg) => pkg.name === dependency
@@ -223,11 +240,14 @@ function getTaskHash(
     const dependencyHash = getTaskHash(
       dependencyPackage.name,
       dependencyPackage.path,
-      visited
+      visiting
     );
 
     hash.update(dependencyHash);
   }
+
+  // This package is no longer in the current recursion path.
+  visiting.delete(packageName);
 
   return hash.digest("hex");
 }
@@ -355,7 +375,10 @@ async function runBuildParallel() {
   packageName,
   pkg.path
 );
-const cachedHash = getCachedHash(packageName);
+const cachedHash = getCachedHash(
+  packageName,
+  taskName
+);
 
 if (currentHash === cachedHash) {
   console.log(`⚡ CACHE HIT: ${packageName}`);
@@ -377,7 +400,11 @@ console.log(`🔨 CACHE MISS: ${packageName}`);
 
        await runTask(packageName, pkg.path, command);
 
-savePackageHash(packageName, currentHash);
+savePackageHash(
+  packageName,
+  taskName,
+  currentHash
+);
 
 completed.add(packageName);
       })
@@ -429,19 +456,29 @@ function getCachePath(): string {
 
 function savePackageHash(
   packageName: string,
+  taskName: string,
   hash: string
 ): void {
   const cachePath = getCachePath();
 
-  const safeName = packageName.replace(/[^a-zA-Z0-9-_]/g, "_");
+  const safePackageName = packageName.replace(
+    /[^a-zA-Z0-9-_]/g,
+    "_"
+  );
+
+  const safeTaskName = taskName.replace(
+    /[^a-zA-Z0-9-_]/g,
+    "_"
+  );
 
   const filePath = path.join(
     cachePath,
-    `${safeName}.json`
+    `${safePackageName}-${safeTaskName}.json`
   );
 
   const cacheData = {
     packageName,
+    taskName,
     hash,
   };
 
@@ -451,21 +488,35 @@ function savePackageHash(
   );
 }
 
-function getCachedHash(packageName: string): string | null {
+function getCachedHash(
+  packageName: string,
+  taskName: string
+): string | null {
   const cachePath = getCachePath();
 
-  const safeName = packageName.replace(/[^a-zA-Z0-9-_]/g, "_");
+  const safePackageName = packageName.replace(
+    /[^a-zA-Z0-9-_]/g,
+    "_"
+  );
+
+  const safeTaskName = taskName.replace(
+    /[^a-zA-Z0-9-_]/g,
+    "_"
+  );
 
   const filePath = path.join(
     cachePath,
-    `${safeName}.json`
+    `${safePackageName}-${safeTaskName}.json`
   );
 
   if (!fs.existsSync(filePath)) {
     return null;
   }
 
-  const content = fs.readFileSync(filePath, "utf-8");
+  const content = fs.readFileSync(
+    filePath,
+    "utf-8"
+  );
 
   const cacheData = JSON.parse(content);
 

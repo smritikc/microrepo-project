@@ -1,1 +1,24 @@
-microrepo/.cache/
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build and distribution outputs
+dist/
+build/
+out/
+
+# Caches
+.cache/
+**/.cache/
+.turbo/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment & OS files
+.env
+.env.*
+.DS_Store
+Thumbs.db

@@ -1,12 +1,23 @@
 {
   "name": "microrepo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Fast and lightweight monorepo build system & task runner",
+  "main": "dist/index.js",
+  "bin": {
+    "microrepo": "./dist/index.js"
+  },
   "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "monorepo",
+    "build-tool",
+    "task-runner",
+    "cache",
+    "dag"
+  ],
   "author": "",
   "license": "ISC",
   "devEngines": {

@@ -75,6 +75,21 @@ function updateBadgeCounts() {
   if (countHigh) countHigh.textContent = mockFindings.filter((f) => f.severity === "HIGH").length.toString();
 }
 
+function showToast(message: string, icon = "✅") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = "toast-fade-out 0.3s ease-in forwards";
+    setTimeout(() => toast.remove(), 300);
+  }, 2400);
+}
+
 function renderDashboard(findings: SecretFinding[]) {
   const tbody = document.getElementById("findings-tbody");
   const criticalCount = document.getElementById("critical-count");
@@ -99,13 +114,39 @@ function renderDashboard(findings: SecretFinding[]) {
         <td><span class="severity-tag ${f.severity}">${f.severity}</span></td>
         <td><strong>${f.ruleName}</strong></td>
         <td><span class="code-font">${f.filePath}:${f.lineNumber}</span></td>
-        <td><span class="code-font">${f.maskedSecret}</span></td>
+        <td>
+          <div class="secret-cell-wrap">
+            <span class="code-font">${f.maskedSecret}</span>
+            <button class="btn-icon-copy" data-copy="${f.maskedSecret}" title="Copy Masked Token">📋</button>
+          </div>
+        </td>
         <td><span class="entropy-pill">${f.entropy} bits</span></td>
-        <td><span style="color: var(--text-secondary); font-size: 12px;">${f.remediationSuggestion}</span></td>
+        <td>
+          <div class="remediation-cell">
+            <span class="remediation-text">${f.remediationSuggestion}</span>
+            <button class="btn-remediate" data-id="${f.id}" data-action="fix">Resolve</button>
+          </div>
+        </td>
       </tr>
     `
     )
     .join("");
+
+  // Attach row action listeners
+  tbody.querySelectorAll(".btn-icon-copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const val = btn.getAttribute("data-copy") || "";
+      navigator.clipboard?.writeText(val);
+      showToast(`Copied ${val} to clipboard`, "📋");
+    });
+  });
+
+  tbody.querySelectorAll(".btn-remediate").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-id");
+      showToast(`Remediation playbook initiated for finding [${id}]`, "🛡️");
+    });
+  });
 }
 
 document.querySelectorAll("#severity-filters .filter-pill").forEach((btn) => {

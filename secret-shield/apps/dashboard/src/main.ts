@@ -107,6 +107,21 @@ function renderDashboard(findings: SecretFinding[]) {
   filesCount.textContent = "42";
   healthScore.textContent = findings.length === 0 ? "100%" : "45%";
 
+  if (findings.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state-cell">
+          <div class="empty-state">
+            <span class="empty-icon">🛡️</span>
+            <h3>No Threat Findings Detected</h3>
+            <p>All scanned codebases, environment configs, and repository branches comply with security policies.</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   tbody.innerHTML = findings
     .map(
       (f) => `

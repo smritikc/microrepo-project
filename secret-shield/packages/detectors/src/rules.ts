@@ -1,0 +1,57 @@
+import { DetectionRule } from "@shield/types";
+
+export const DEFAULT_RULES: DetectionRule[] = [
+  {
+    id: "RULE_AWS_KEY",
+    name: "AWS Access Key ID",
+    pattern: /(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}/g,
+    severity: "CRITICAL",
+    entropyThreshold: 3.0,
+    description: "Identifies standard AWS Access Key IDs that grant cloud API access.",
+    remediationGuide: "Rotate the AWS access key immediately via AWS IAM and invalidate the compromised key.",
+  },
+  {
+    id: "RULE_OPENAI_KEY",
+    name: "OpenAI API Key",
+    pattern: /sk-(?:proj-|live-)?[a-zA-Z0-9_-]{32,80}/g,
+    severity: "CRITICAL",
+    entropyThreshold: 3.8,
+    description: "Identifies secret OpenAI API credentials.",
+    remediationGuide: "Revoke the key from OpenAI Dashboard and store the new key in environment variables.",
+  },
+  {
+    id: "RULE_GITHUB_TOKEN",
+    name: "GitHub Personal Access Token",
+    pattern: /gh[pousr]_[a-zA-Z0-9]{36,255}/g,
+    severity: "CRITICAL",
+    entropyThreshold: 3.5,
+    description: "Matches GitHub Personal Access Tokens and OAuth tokens.",
+    remediationGuide: "Revoke token via GitHub Settings > Developer settings > Personal access tokens.",
+  },
+  {
+    id: "RULE_STRIPE_KEY",
+    name: "Stripe Live Secret Key",
+    pattern: /sk_live_[0-9a-zA-Z]{24,34}/g,
+    severity: "CRITICAL",
+    entropyThreshold: 3.5,
+    description: "Matches live Stripe payment processing secret keys.",
+    remediationGuide: "Roll secret API key in Stripe Developers Dashboard.",
+  },
+  {
+    id: "RULE_PRIVATE_KEY",
+    name: "Unencrypted Private Key Block",
+    pattern: /-----BEGIN (?:RSA|OPENSSH|DSA|EC|PGP) PRIVATE KEY-----/g,
+    severity: "CRITICAL",
+    description: "Detected raw unencrypted private key header.",
+    remediationGuide: "Remove private key file from repository, rotate SSH/TLS certificates, and purge git history.",
+  },
+  {
+    id: "RULE_GENERIC_HIGH_ENTROPY",
+    name: "High-Entropy API Secret / Token",
+    pattern: /(?:secret|password|token|apikey|api_key|auth_token|access_token|client_secret)\s*[:=]\s*['"]([a-zA-Z0-9_\-.~+]{20,})['"]/gi,
+    severity: "HIGH",
+    entropyThreshold: 4.2,
+    description: "Detects generic high-entropy strings assigned to secret keywords.",
+    remediationGuide: "Move the credential into a secure secrets manager or .env file.",
+  },
+];

@@ -1,0 +1,16 @@
+{
+  "name": "@shield/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "secretshield": "./src/index.ts"
+  },
+  "dependencies": {
+    "@shield/detectors": "workspace:*",
+    "@shield/remediation": "workspace:*",
+    "@shield/types": "workspace:*"
+  },
+  "scripts": {
+    "build": "echo [cli] Built CLI executable"
+  }
+}

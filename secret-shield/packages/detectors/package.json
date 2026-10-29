@@ -1,0 +1,12 @@
+{
+  "name": "@shield/detectors",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@shield/types": "workspace:*"
+  },
+  "scripts": {
+    "build": "echo [detectors] Compiled rule engine"
+  }
+}

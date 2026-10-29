@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecretShield — Security Intelligence Console</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="navbar">
+      <div class="brand">
+        <div class="shield-icon">🛡️</div>
+        <div>
+          <h1>SecretShield</h1>
+          <span class="badge live">LIVE PROTECTION</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="scan-btn" class="btn primary">⚡ Trigger Live Scan</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- Top Metrics -->
+      <section class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Critical Leaks</span>
+            <span class="icon red">🚨</span>
+          </div>
+          <div class="metric-value red" id="critical-count">0</div>
+          <div class="metric-sub">Requires immediate rotation</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>High Entropy Tokens</span>
+            <span class="icon yellow">⚠️</span>
+          </div>
+          <div class="metric-value yellow" id="high-count">0</div>
+          <div class="metric-sub">> 3.8 Shannon Entropy</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Files Analyzed</span>
+            <span class="icon blue">📁</span>
+          </div>
+          <div class="metric-value blue" id="files-count">0</div>
+          <div class="metric-sub">Across monorepo tree</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Remediation Health</span>
+            <span class="icon green">🛡️</span>
+          </div>
+          <div class="metric-value green" id="health-score">100%</div>
+          <div class="metric-sub">Zero unmasked secrets</div>
+        </div>
+      </section>
+
+      <!-- Findings Table -->
+      <section class="findings-panel">
+        <div class="panel-header">
+          <h2>Detected Secrets & Threat Findings</h2>
+          <div class="filters">
+            <span class="filter-pill active">All Findings</span>
+            <span class="filter-pill">Critical</span>
+            <span class="filter-pill">High Entropy</span>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="findings-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Rule / Type</th>
+                <th>File Location</th>
+                <th>Masked Secret</th>
+                <th>Entropy</th>
+                <th>Remediation Action</th>
+              </tr>
+            </thead>
+            <tbody id="findings-tbody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>

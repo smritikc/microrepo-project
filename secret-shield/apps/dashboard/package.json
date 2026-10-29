@@ -1,0 +1,11 @@
+{
+  "name": "@shield/dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@shield/types": "workspace:*"
+  },
+  "scripts": {
+    "build": "echo [dashboard] Compiled web assets"
+  }
+}

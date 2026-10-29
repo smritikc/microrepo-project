@@ -1,0 +1,15 @@
+{
+  "name": "secret-shield-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise-grade Secret Detection and Leak Prevention Suite",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "pnpm --dir ../microrepo tsx src/index.ts ../secret-shield build",
+    "test": "pnpm --dir ../microrepo tsx src/index.ts ../secret-shield test"
+  },
+  "type": "module"
+}

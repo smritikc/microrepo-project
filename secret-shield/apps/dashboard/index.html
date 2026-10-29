@@ -13,11 +13,32 @@
       <div class="brand">
         <div class="shield-icon">🛡️</div>
         <div>
-          <h1>SecretShield</h1>
-          <span class="badge live">LIVE PROTECTION</span>
+          <div class="brand-title-wrap">
+            <h1>SecretShield</h1>
+            <span class="version-tag">v2.4.0</span>
+          </div>
+          <div class="brand-subline">
+            <span class="pulse-indicator">
+              <span class="pulse-dot"></span>
+              <span class="pulse-text">Daemon Active</span>
+            </span>
+            <span class="badge live">SOC-2 COMPLIANT</span>
+          </div>
+        </div>
+      </div>
+      <div class="system-telemetry">
+        <div class="telemetry-item">
+          <span class="telemetry-label">Monorepo Engine</span>
+          <span class="telemetry-val">microrepo 1.0</span>
+        </div>
+        <div class="telemetry-divider"></div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Active Rules</span>
+          <span class="telemetry-val">142 Detectors</span>
         </div>
       </div>
       <div class="actions">
+        <button id="export-btn" class="btn secondary">📥 Export JSON</button>
         <button id="scan-btn" class="btn primary">⚡ Trigger Live Scan</button>
       </div>
     </header>

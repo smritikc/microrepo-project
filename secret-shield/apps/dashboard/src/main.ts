@@ -48,6 +48,33 @@ const mockFindings: SecretFinding[] = [
   },
 ];
 
+let activeSeverity = "ALL";
+let searchQuery = "";
+
+function applyFilters() {
+  const filtered = mockFindings.filter((f) => {
+    const matchesSeverity = activeSeverity === "ALL" || f.severity === activeSeverity;
+    const matchesSearch =
+      !searchQuery ||
+      f.ruleName.toLowerCase().includes(searchQuery) ||
+      f.filePath.toLowerCase().includes(searchQuery) ||
+      f.maskedSecret.toLowerCase().includes(searchQuery) ||
+      f.severity.toLowerCase().includes(searchQuery);
+    return matchesSeverity && matchesSearch;
+  });
+  renderDashboard(filtered);
+}
+
+function updateBadgeCounts() {
+  const countAll = document.getElementById("count-all");
+  const countCritical = document.getElementById("count-critical");
+  const countHigh = document.getElementById("count-high");
+
+  if (countAll) countAll.textContent = mockFindings.length.toString();
+  if (countCritical) countCritical.textContent = mockFindings.filter((f) => f.severity === "CRITICAL").length.toString();
+  if (countHigh) countHigh.textContent = mockFindings.filter((f) => f.severity === "HIGH").length.toString();
+}
+
 function renderDashboard(findings: SecretFinding[]) {
   const tbody = document.getElementById("findings-tbody");
   const criticalCount = document.getElementById("critical-count");
@@ -81,27 +108,30 @@ function renderDashboard(findings: SecretFinding[]) {
     .join("");
 }
 
+document.querySelectorAll("#severity-filters .filter-pill").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#severity-filters .filter-pill").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeSeverity = btn.getAttribute("data-severity") || "ALL";
+    applyFilters();
+  });
+});
+
 document.getElementById("scan-btn")?.addEventListener("click", () => {
   const btn = document.getElementById("scan-btn");
   if (btn) {
     btn.textContent = "⏳ Scanning...";
     setTimeout(() => {
       btn.textContent = "⚡ Trigger Live Scan";
-      renderDashboard(mockFindings);
+      updateBadgeCounts();
+      applyFilters();
     }, 600);
   }
 });
 
 document.getElementById("finding-search")?.addEventListener("input", (e) => {
-  const query = (e.target as HTMLInputElement).value.toLowerCase().trim();
-  const filtered = mockFindings.filter(
-    (f) =>
-      f.ruleName.toLowerCase().includes(query) ||
-      f.filePath.toLowerCase().includes(query) ||
-      f.maskedSecret.toLowerCase().includes(query) ||
-      f.severity.toLowerCase().includes(query)
-  );
-  renderDashboard(filtered);
+  searchQuery = (e.target as HTMLInputElement).value.toLowerCase().trim();
+  applyFilters();
 });
 
 document.getElementById("export-btn")?.addEventListener("click", () => {
@@ -124,4 +154,5 @@ document.getElementById("export-btn")?.addEventListener("click", () => {
 });
 
 // Initial render
+updateBadgeCounts();
 renderDashboard(mockFindings);

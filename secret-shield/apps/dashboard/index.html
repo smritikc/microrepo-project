@@ -107,10 +107,16 @@
               <span class="search-icon">🔍</span>
               <input type="text" id="finding-search" placeholder="Filter by rule, file, or token..." />
             </div>
-            <div class="filters">
-              <span class="filter-pill active">All Findings</span>
-              <span class="filter-pill">Critical</span>
-              <span class="filter-pill">High Entropy</span>
+            <div class="filters" id="severity-filters">
+              <button class="filter-pill active" data-severity="ALL">
+                All Findings <span class="pill-count" id="count-all">0</span>
+              </button>
+              <button class="filter-pill" data-severity="CRITICAL">
+                Critical <span class="pill-count count-critical" id="count-critical">0</span>
+              </button>
+              <button class="filter-pill" data-severity="HIGH">
+                High Entropy <span class="pill-count count-high" id="count-high">0</span>
+              </button>
             </div>
           </div>
         </div>

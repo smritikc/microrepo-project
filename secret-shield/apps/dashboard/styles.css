@@ -400,17 +400,47 @@ body {
 
 .filter-pill {
   font-size: 12px;
+  font-family: var(--font-sans);
   padding: 6px 12px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-secondary);
   cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
 }
 
 .filter-pill.active {
   background: rgba(56, 189, 248, 0.15);
   color: var(--accent-blue);
+  border-color: rgba(56, 189, 248, 0.35);
   font-weight: 600;
+}
+
+.pill-count {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.pill-count.count-critical {
+  color: var(--accent-red);
+  background: rgba(244, 63, 94, 0.15);
+}
+
+.pill-count.count-high {
+  color: var(--accent-yellow);
+  background: rgba(251, 191, 36, 0.15);
 }
 
 .table-container {

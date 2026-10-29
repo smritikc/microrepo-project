@@ -25,40 +25,52 @@
     <main class="main-content">
       <!-- Top Metrics -->
       <section class="metrics-grid">
-        <div class="metric-card">
+        <div class="metric-card border-red">
           <div class="metric-header">
             <span>Critical Leaks</span>
             <span class="icon red">🚨</span>
           </div>
-          <div class="metric-value red" id="critical-count">0</div>
+          <div class="metric-value-wrap">
+            <div class="metric-value red" id="critical-count">0</div>
+            <span class="metric-trend negative">↑ +2 detected</span>
+          </div>
           <div class="metric-sub">Requires immediate rotation</div>
         </div>
 
-        <div class="metric-card">
+        <div class="metric-card border-yellow">
           <div class="metric-header">
             <span>High Entropy Tokens</span>
             <span class="icon yellow">⚠️</span>
           </div>
-          <div class="metric-value yellow" id="high-count">0</div>
-          <div class="metric-sub">> 3.8 Shannon Entropy</div>
+          <div class="metric-value-wrap">
+            <div class="metric-value yellow" id="high-count">0</div>
+            <span class="metric-trend warning">→ Shannon > 3.8</span>
+          </div>
+          <div class="metric-sub">Probable raw API credentials</div>
         </div>
 
-        <div class="metric-card">
+        <div class="metric-card border-blue">
           <div class="metric-header">
             <span>Files Analyzed</span>
             <span class="icon blue">📁</span>
           </div>
-          <div class="metric-value blue" id="files-count">0</div>
+          <div class="metric-value-wrap">
+            <div class="metric-value blue" id="files-count">0</div>
+            <span class="metric-trend info">100% indexed</span>
+          </div>
           <div class="metric-sub">Across monorepo tree</div>
         </div>
 
-        <div class="metric-card">
+        <div class="metric-card border-green">
           <div class="metric-header">
             <span>Remediation Health</span>
             <span class="icon green">🛡️</span>
           </div>
-          <div class="metric-value green" id="health-score">100%</div>
-          <div class="metric-sub">Zero unmasked secrets</div>
+          <div class="metric-value-wrap">
+            <div class="metric-value green" id="health-score">100%</div>
+            <span class="metric-trend positive">✓ active guard</span>
+          </div>
+          <div class="metric-sub">Automated masking active</div>
         </div>
       </section>
 

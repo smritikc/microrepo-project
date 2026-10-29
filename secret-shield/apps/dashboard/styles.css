@@ -103,23 +103,95 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  padding: 20px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.metric-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  opacity: 0.8;
+}
+
+.metric-card.border-red::before {
+  background: linear-gradient(90deg, var(--accent-red), #be123c);
+}
+
+.metric-card.border-yellow::before {
+  background: linear-gradient(90deg, var(--accent-yellow), #d97706);
+}
+
+.metric-card.border-blue::before {
+  background: linear-gradient(90deg, var(--accent-blue), #0284c7);
+}
+
+.metric-card.border-green::before {
+  background: linear-gradient(90deg, var(--accent-green), #059669);
 }
 
 .metric-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 12px;
 }
 
+.metric-value-wrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
 .metric-value {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 800;
   font-family: var(--font-mono);
-  margin-bottom: 6px;
+  letter-spacing: -1px;
+}
+
+.metric-trend {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+}
+
+.metric-trend.negative {
+  background: rgba(244, 63, 94, 0.15);
+  color: var(--accent-red);
+}
+
+.metric-trend.warning {
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--accent-yellow);
+}
+
+.metric-trend.info {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-blue);
+}
+
+.metric-trend.positive {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
 }
 
 .metric-value.red { color: var(--accent-red); }

@@ -65,11 +65,20 @@
       <!-- Findings Table -->
       <section class="findings-panel">
         <div class="panel-header">
-          <h2>Detected Secrets & Threat Findings</h2>
-          <div class="filters">
-            <span class="filter-pill active">All Findings</span>
-            <span class="filter-pill">Critical</span>
-            <span class="filter-pill">High Entropy</span>
+          <div class="panel-title-group">
+            <h2>Detected Secrets & Threat Findings</h2>
+            <span class="panel-subtitle">Real-time scan detections across active repository branches</span>
+          </div>
+          <div class="panel-controls">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="finding-search" placeholder="Filter by rule, file, or token..." />
+            </div>
+            <div class="filters">
+              <span class="filter-pill active">All Findings</span>
+              <span class="filter-pill">Critical</span>
+              <span class="filter-pill">High Entropy</span>
+            </div>
           </div>
         </div>
 

@@ -92,5 +92,17 @@ document.getElementById("scan-btn")?.addEventListener("click", () => {
   }
 });
 
+document.getElementById("finding-search")?.addEventListener("input", (e) => {
+  const query = (e.target as HTMLInputElement).value.toLowerCase().trim();
+  const filtered = mockFindings.filter(
+    (f) =>
+      f.ruleName.toLowerCase().includes(query) ||
+      f.filePath.toLowerCase().includes(query) ||
+      f.maskedSecret.toLowerCase().includes(query) ||
+      f.severity.toLowerCase().includes(query)
+  );
+  renderDashboard(filtered);
+});
+
 // Initial render
 renderDashboard(mockFindings);
